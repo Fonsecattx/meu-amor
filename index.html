@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="purple">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nosso Amor - Universo Interativo & Memórias</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+        /* Temas com Roxo Neon e Efeitos de Brilho */
+        [data-theme="purple"] {
+            --primary: #c084fc;
+            --primary-glow: rgba(192, 132, 252, 0.6);
+            --secondary: #f472b6;
+            --background: #090514;
+            --card-bg: rgba(25, 16, 48, 0.75);
+            --card-border: rgba(192, 132, 252, 0.4);
+            --text-color: #f3e8ff;
+            --text-muted: #d8b4fe;
+            --shadow: rgba(168, 85, 247, 0.4);
+        }
+        [data-theme="night"] {
+            --primary: #818cf8;
+            --primary-glow: rgba(129, 140, 248, 0.6);
+            --secondary: #c084fc;
+            --background: #050b14;
+            --card-bg: rgba(15, 23, 42, 0.8);
+            --card-border: rgba(129, 140, 248, 0.3);
+            --text-color: #e2e8f0;
+            --text-muted: #94a3b8;
+            --shadow: rgba(129, 140, 248, 0.3);
+        }
+        [data-theme="sunset"] {
+            --primary: #fb923c;
+            --primary-glow: rgba(251, 146, 60, 0.6);
+            --secondary: #f43f5e;
+            --background: #140705;
+            --card-bg: rgba(43, 15, 10, 0.8);
+            --card-border: rgba(251, 146, 60, 0.35);
+            --text-color: #fff7ed;
+            --text-muted: #fed7aa;
+            --shadow: rgba(249, 115, 22, 0.35);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            align-items: center;
+            padding: 25px 10px 60px 10px;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Canvas de Animação de Fundo */
+        #bgCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Seletor de Temas Flutuante */
+        .theme-selector {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 8px;
+            background: var(--card-bg);
+            backdrop-filter: blur(15px);
+            padding: 8px;
+            border-radius: 20px;
+            box-shadow: 0 0 15px var(--primary-glow);
+            z-index: 100;
+            border: 1px solid var(--card-border);
+        }
+
+        .theme-btn {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.8);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .theme-btn:hover {
+            transform: scale(1.25);
+        }
+
+        header {
+            text-align: center;
+            margin-top: 30px;
+            margin-bottom: 25px;
+            z-index: 10;
+        }
+
+        header h1 {
+            font-family: 'Playfair Display', serif;
+            color: var(--primary);
+            text-shadow: 0 0 20px var(--primary-glow);
+            font-size: 2.8rem;
+            margin-bottom: 8px;
+            animation: pulseGlow 3s infinite alternate;
+        }
+
+        @keyframes pulseGlow {
+            0% { text-shadow: 0 0 15px var(--primary-glow); }
+            100% { text-shadow: 0 0 30px var(--secondary); }
+        }
+
+        header p {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+        }
+
+        /* Menu de Navegação Interativo */
+        .menu {
+            display: flex;
+            gap: 8px;
+            background: var(--card-bg);
+            backdrop-filter: blur(15px);
+            padding: 10px;
+            border-radius: 30px;
+            box-shadow: 0 10px 30px var(--shadow);
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 850px;
+            border: 1px solid var(--card-border);
+            z-index: 10;
+        }
+
+        .menu-btn {
+            background: transparent;
+            border: none;
+            padding: 10px 18px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--text-color);
+            opacity: 0.8;
+            cursor: pointer;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .menu-btn.active, .menu-btn:hover {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: #ffffff;
+            opacity: 1;
+            box-shadow: 0 0 20px var(--primary-glow);
+            transform: translateY(-2px);
+        }
+
+        /* Seções de Conteúdo Animadas */
+        .content-section {
+            display: none;
+            width: 100%;
+            max-width: 680px;
+            background: var(--card-bg);
+            backdrop-filter: blur(25px);
+            padding: 35px;
+            border-radius: 28px;
+            box-shadow: 0 20px 50px var(--shadow);
+            animation: floatUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            border: 1px solid var(--card-border);
+            z-index: 10;
+            transform-style: preserve-3d;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        @keyframes floatUp {
+            from { opacity: 0; transform: translateY(25px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .story-title {
+            font-family: 'Playfair Display', serif;
+            color: var(--primary);
+            margin-bottom: 25px;
+            font-size: 2rem;
+            text-align: center;
+            text-shadow: 0 0 12px var(--primary-glow);
+        }
+
+        /* 1. Timeline Estilizada */
+        .timeline {
+            position: relative;
+            padding-left: 25px;
+            border-left: 3px dashed var(--primary);
+        }
+
+        .timeline-item {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -32px;
+            top: 4px;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--primary);
+            border: 3px solid var(--background);
+            box-shadow: 0 0 15px var(--primary);
+        }
+
+        .timeline-date {
+            font-size: 0.85rem;
+            color: var(--primary);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .timeline-text {
+            font-size: 1.05rem;
+            margin-top: 6px;
+            color: var(--text-color);
+            opacity: 0.9;
+            line-height: 1.5;
+        }
+
+        /* 2. Contador Luminoso */
+        .counter-container {
+            text-align: center;
+        }
+
+        .countdown-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        @media (max-width: 500px) {
+            .countdown-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .time-box {
+            background: rgba(255, 255, 255, 0.04);
+            padding: 16px 10px;
+            border-radius: 18px;
+            border: 1px solid var(--card-border);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .time-box:hover {
+            transform: translateY(-4px);
+            border-color: var(--primary);
+        }
+
+        .time-box span {
+            display: block;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-shadow: 0 0 12px var(--primary-glow);
+        }
+
+        .time-box label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        /* 3. Player de Música com Efeito Vinil 3D */
+        .music-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 18px;
+        }
+
+        .vinyl-container {
+            position: relative;
+            width: 200px;
+            height: 200px;
+        }
+
+        .music-cover {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: 0 0 25px var(--primary-glow);
+            border: 4px solid var(--primary);
+            animation: spinVinyl 12s linear infinite;
+            animation-play-state: paused;
+        }
+
+        @keyframes spinVinyl {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .music-info h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.6rem;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+
+        .music-info p {
+            font-size: 1rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .audio-wrapper {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 12px;
+            border-radius: 16px;
+            border: 1px solid var(--card-border);
+        }
+
+        audio {
+            width: 100%;
+            accent-color: var(--primary);
+        }
+
+        .spotify-link-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #1db954;
+            color: white;
+            text-decoration: none;
+            padding: 10px 22px;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 15px rgba(29, 185, 84, 0.4);
+            transition: transform 0.2s;
+        }
+
+        .spotify-link-btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* 4. Galeria Polaroid 3D */
+        .polaroid-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 20px;
+            justify-items: center;
+        }
+
+        .polaroid {
+            background: #ffffff;
+            padding: 10px 10px 22px 10px;
+            border-radius: 6px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 210px;
+            transform: rotate(-2deg);
+            transition: all 0.4s ease;
+            cursor: pointer;
+        }
+
+        .polaroid:nth-child(even) {
+            transform: rotate(2deg);
+        }
+
+        .polaroid:hover {
+            transform: scale(1.08) rotate(0deg) translateY(-5px);
+            box-shadow: 0 15px 35px var(--primary-glow);
+            z-index: 10;
+        }
+
+        .polaroid img {
+            width: 100%;
+            height: 155px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+
+        .polaroid p {
+            text-align: center;
+            font-family: 'Playfair Display', serif;
+            font-size: 0.9rem;
+            color: #312e81;
+            margin-top: 10px;
+        }
+
+        /* 5. Vales-Amor */
+        .coupon-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 15px;
+        }
+
+        .coupon-card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 2px dashed var(--primary);
+            padding: 18px;
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 12px;
+            transition: transform 0.2s;
+        }
+
+        .coupon-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .coupon-info h4 {
+            color: var(--primary);
+            font-size: 1.05rem;
+            margin-bottom: 4px;
+        }
+
+        .coupon-info p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        .coupon-btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 9px 18px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            box-shadow: 0 4px 12px var(--shadow);
+            transition: all 0.2s;
+            align-self: flex-start;
+        }
+
+        .coupon-btn.resgatado {
+            background: #10b981;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            cursor: default;
+        }
+
+        /* 6. Motivos Para Te Amar */
+        .reasons-container {
+            text-align: center;
+        }
+
+        .reason-box {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            padding: 28px;
+            border-radius: 20px;
+            min-height: 130px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .reason-box p {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.25rem;
+            font-style: italic;
+            line-height: 1.5;
+            color: var(--text-color);
+        }
+
+        .reveal-btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 6px 20px var(--shadow);
+            transition: transform 0.2s ease;
+        }
+
+        .reveal-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* 7. Bucket List */
+        .bucket-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .bucket-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.04);
+            padding: 14px 18px;
+            border-radius: 14px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            border: 1px solid var(--card-border);
+            transition: all 0.2s;
+        }
+
+        .bucket-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .bucket-item input[type="checkbox"] {
+            accent-color: var(--primary);
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .bucket-item.checked {
+            text-decoration: line-through;
+            opacity: 0.6;
+        }
+
+        /* 8. Quiz do Casal */
+        .quiz-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .quiz-card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--card-border);
+            padding: 20px;
+            border-radius: 18px;
+        }
+
+        .quiz-card h4 {
+            color: var(--primary);
+            font-size: 1.05rem;
+            margin-bottom: 12px;
+        }
+
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .quiz-opt-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--card-border);
+            color: var(--text-color);
+            padding: 10px 15px;
+            border-radius: 12px;
+            text-align: left;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quiz-opt-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .quiz-opt-btn.correct {
+            background: #10b981 !important;
+            color: white !important;
+        }
+
+        .quiz-opt-btn.wrong {
+            background: #ef4444 !important;
+            color: white !important;
+        }
+
+        /* 9. Carta de Amor */
+        .letter-box {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            padding: 25px;
+            border-radius: 20px;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--text-color);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Canvas de Partículas/Corações -->
+    <canvas id="bgCanvas"></canvas>
+
+    <!-- Seletor de Temas -->
+    <div class="theme-selector">
+        <button class="theme-btn" style="background: #a855f7;" onclick="setTheme('purple')" title="Tema Roxo Ultra"></button>
+        <button class="theme-btn" style="background: #818cf8;" onclick="setTheme('night')" title="Tema Noturno"></button>
+        <button class="theme-btn" style="background: #f97316;" onclick="setTheme('sunset')" title="Tema Pôr do Sol"></button>
+    </div>
+
+    <header>
+        <h1>Nossa História</h1>
+        <p>Um universo de memórias feito só para nós dois ✨</p>
+    </header>
+
+    <!-- Menu de Navegação -->
+    <div class="menu">
+        <button class="menu-btn active" onclick="switchTab(event, 'tab-album')">📖 Álbum</button>
+        <button class="menu-btn" onclick="switchTab(event, 'tab-polaroid')">🖼️ Galeria</button>
+        <button class="menu-btn" onclick="switchTab(event, 'tab-counter')">⏳ Tempo</button>
+        <button class="menu-btn" onclick="switchTab(event, 'tab-music')">🎶 Música</button>
+        <button class="menu-btn" onclick="switchTab(event, 'tab-coupons')">🎟️ Vales</button>
+        <button class="menu-btn" onclick="switchTab(event, 'tab-reasons')">💡 Motivos</button>
+        <button class="menu-btn" onclick="switchTab(event, 'tab-bucket')">📌 List</button>
+        <button class="menu-btn" onclick="switchTab(event, 'tab-quiz')">❓ Quiz</button>
+        <button class="menu-btn" onclick="switchTab(event, 'tab-letter')">✉️ Carta</button>
+    </div>
+
+    <!-- Seção 1: O Álbum / História -->
+    <div id="tab-album" class="content-section active">
+        <h2 class="story-title">Nossa Trajetória</h2>
+        <div class="timeline">
+            <div class="timeline-item">
+                <span class="timeline-date">21 de Abril</span>
+                <p class="timeline-text">O dia em que nos conhecemos e tudo começou a mudar.</p>
+            </div>
+            <div class="timeline-item">
+                <span class="timeline-date">8 de Junho</span>
+                <p class="timeline-text">Nosso primeiro "Eu te amo" (um dos momentos mais inesquecíveis).</p>
+            </div>
+            <div class="timeline-item">
+                <span class="timeline-date">Hoje</span>
+                <p class="timeline-text">Sou a pessoa mais feliz do mundo por caminhar ao seu lado todos os dias.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Seção 2: Galeria Estilo Polaroid -->
+    <div id="tab-polaroid" class="content-section">
+        <h2 class="story-title">Momentos Inesquecíveis</h2>
+        <div class="polaroid-grid">
+            <div class="polaroid">
+                <img src="img/img1.png" alt="Nossa primeira foto" onerror="this.src='https://placehold.co/220x160/a855f7/ffffff?text=Foto+1'">
+                <p>Nossa primeira foto</p>
+            </div>
+            <div class="polaroid">
+                <img src="img/img2.png" alt="Uma das favoritas" onerror="this.src='https://placehold.co/220x160/a855f7/ffffff?text=Foto+2'">
+                <p>Uma das minhas favoritas</p>
+            </div>
+            <div class="polaroid">
+                <img src="img/img3.png" alt="Nosso dia especial" onerror="this.src='https://placehold.co/220x160/a855f7/ffffff?text=Foto+3'">
+                <p>Nosso dia especial</p>
+            </div>
+            <div class="polaroid">
+                <img src="img/img4.png" alt="Passeio inesquecível" onerror="this.src='https://placehold.co/220x160/a855f7/ffffff?text=Foto+4'">
+                <p>Passeio inesquecível</p>
+            </div>
+            <div class="polaroid">
+                <img src="img/img5.png" alt="Seu sorriso lindo" onerror="this.src='https://placehold.co/220x160/a855f7/ffffff?text=Foto+5'">
+                <p>Seu sorriso lindo</p>
+            </div>
+            <div class="polaroid">
+                <img src="img/img6.png" alt="Sempre juntos" onerror="this.src='https://placehold.co/220x160/a855f7/ffffff?text=Foto+6'">
+                <p>Sempre juntos ❤️</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Seção 3: Contador de Tempo Completo -->
+    <div id="tab-counter" class="content-section">
+        <h2 class="story-title">Tempo de Cumplicidade</h2>
+        <div class="counter-container">
+            <p style="margin-bottom: 20px; font-size: 1.05rem; opacity: 0.85;">
+                Você ilumina a minha vida há:
+            </p>
+            <div class="countdown-grid">
+                <div class="time-box"><span id="meses">0</span><label>Meses</label></div>
+                <div class="time-box"><span id="semanas">0</span><label>Semanas</label></div>
+                <div class="time-box"><span id="dias">0</span><label>Dias</label></div>
+                <div class="time-box"><span id="horas">0</span><label>Horas</label></div>
+                <div class="time-box"><span id="minutos">0</span><label>Minutos</label></div>
+                <div class="time-box"><span id="segundos">0</span><label>Segundos</label></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Seção 4: Nossa Música (com a capa img/musc1.png) -->
+    <div id="tab-music" class="content-section">
+        <h2 class="story-title">Nossa Canção 🎶</h2>
+        <div class="music-card">
+            <div class="vinyl-container">
+                <img src="img/musc1.png" alt="Só Nós Dois - Tim Bernardes" class="music-cover" id="musicCover" onerror="this.src='img/musc1.jpg'; this.onerror=function(){this.src='https://placehold.co/200x200/a855f7/ffffff?text=musc1.png';}">
+            </div>
+            
+            <div class="music-info">
+                <h3>Só Nós Dois</h3>
+                <p>Tim Bernardes</p>
+            </div>
+
+            <div class="audio-wrapper">
+                <audio controls preload="metadata" id="myAudio" onplay="startVinyl()" onpause="stopVinyl()">
+                    <source src="musica.mp3" type="audio/mpeg">
+                    O seu navegador não suporta a reprodução de áudio.
+                </audio>
+            </div>
+
+            <a href="https://open.spotify.com/track/3AdZFK0JBBnJdJd0rcSFUj" target="_blank" class="spotify-link-btn">
+                Ouvir no Spotify 🟢
+            </a>
+        </div>
+    </div>
+
+    <!-- Seção 5: Vales-Amor -->
+    <div id="tab-coupons" class="content-section">
+        <h2 class="story-title">Cupons de Amor</h2>
+        <div class="coupon-grid">
+            <div class="coupon-card">
+                <div class="coupon-info">
+                    <h4>Vale Escolher o Filme</h4>
+                    <p>Escolha qualquer filme ou série sem direito a reclamação!</p>
+                </div>
+                <button class="coupon-btn" onclick="resgatarCupom(this)">Resgatar</button>
+            </div>
+            <div class="coupon-card">
+                <div class="coupon-info">
+                    <h4>Vale Abraço Apertado</h4>
+                    <p>Resgatável a qualquer momento com direito a durar 5 minutos.</p>
+                </div>
+                <button class="coupon-btn" onclick="resgatarCupom(this)">Resgatar</button>
+            </div>
+            <div class="coupon-card">
+                <div class="coupon-info">
+                    <h4>Vale Jantar Especial</h4>
+                    <p>Sua comida favorita preparada ou pedida por mim.</p>
+                </div>
+                <button class="coupon-btn" onclick="resgatarCupom(this)">Resgatar</button>
+            </div>
+            <div class="coupon-card">
+                <div class="coupon-info">
+                    <h4>Vale Massagem Relaxante</h4>
+                    <p>Uma massagem completa para tirar todo o cansaço do dia.</p>
+                </div>
+                <button class="coupon-btn" onclick="resgatarCupom(this)">Resgatar</button>
+            </div>
+            <div class="coupon-card">
+                <div class="coupon-info">
+                    <h4>Vale Sobremesa Surpresa</h4>
+                    <p>Direito a um doce ou sobremesa especial no capricho.</p>
+                </div>
+                <button class="coupon-btn" onclick="resgatarCupom(this)">Resgatar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Seção 6: Motivos Para Te Amar -->
+    <div id="tab-reasons" class="content-section">
+        <h2 class="story-title">Por Que Te Amar?</h2>
+        <div class="reasons-container">
+            <div class="reason-box">
+                <p id="reason-text">"Amo o jeito que o seu sorriso consegue iluminar até os meus dias mais difíceis."</p>
+            </div>
+            <button class="reveal-btn" onclick="proximoMotivo()">Ver Outro Motivo 💡</button>
+        </div>
+    </div>
+
+    <!-- Seção 7: Bucket List -->
+    <div id="tab-bucket" class="content-section">
+        <h2 class="story-title">Nossa Bucket List</h2>
+        <div class="bucket-list">
+            <label class="bucket-item checked">
+                <input type="checkbox" checked onchange="toggleCheck(this)"> Ver o pôr do sol na praia juntos
+            </label>
+            <label class="bucket-item">
+                <input type="checkbox" onchange="toggleCheck(this)"> Fazer uma viagem internacional
+            </label>
+            <label class="bucket-item">
+                <input type="checkbox" onchange="toggleCheck(this)"> Cozinhar uma receita nova juntos
+            </label>
+            <label class="bucket-item">
+                <input type="checkbox" onchange="toggleCheck(this)"> Adotar um pet 🐾
+            </label>
+            <label class="bucket-item">
+                <input type="checkbox" onchange="toggleCheck(this)"> Fazer um piquenique no parque num fim de tarde
+            </label>
+        </div>
+    </div>
+
+    <!-- Seção 8: Quiz do Casal -->
+    <div id="tab-quiz" class="content-section">
+        <h2 class="story-title">Quiz do Nosso Amor ❓</h2>
+        <div class="quiz-container">
+            <div class="quiz-card">
+                <h4>1. Onde nos vimos pela primeira vez?</h4>
+                <div class="quiz-options">
+                    <button class="quiz-opt-btn" onclick="responderQuiz(this, true)">eu</button>
+                    <button class="quiz-opt-btn" onclick="responderQuiz(this, false)">você</button>
+                </div>
+            </div>
+
+            <div class="quiz-card">
+                <h4>2. Quem disse "Eu te amo" primeiro?</h4>
+                <div class="quiz-options">
+                    <button class="quiz-opt-btn" onclick="responderQuiz(this, true)">eu</button>
+                    <button class="quiz-opt-btn" onclick="responderQuiz(this, false)">você</button>
+                </div>
+            </div>
+
+            <div class="quiz-card">
+                <h4>3. quem é mais estressado(A)?</h4>
+                <div class="quiz-options">
+                    <button class="quiz-opt-btn" onclick="responderQuiz(this, true)">eu</button>
+                    <button class="quiz-opt-btn" onclick="responderQuiz(this, false)">você</button>
+                </div>
+            </div>
+
+            <div class="quiz-card">
+                <h4>4. Quem é o mais dengoso da relação?</h4>
+                <div class="quiz-options">
+                    <button class="quiz-opt-btn" onclick="responderQuiz(this, true)">eu</button>
+                    <button class="quiz-opt-btn" onclick="responderQuiz(this, false)">você</button>
+                </div>
+            </div>
+
+            <div class="quiz-card">
+                <h4>5. Qual é a melhor coisa de estar juntos?</h4>
+                <div class="quiz-options">
+                    <button class="quiz-opt-btn" onclick="responderQuiz(this, true)">A paz e a certeza de ter alguém especial ao lado ✨</button>
+                    <button class="quiz-opt-btn" onclick="responderQuiz(this, false)">Apenas passar o tempo</button>
+                </div>
+            </div>
+
+            <div class="quiz-card">
+                <h4>6. Quem é a pessoa mais teimosa do relacionamento?</h4>
+                <div class="quiz-options">
+                    <button class="quiz-opt-btn" onclick="responderQuiz(this, true)">Depende do dia, mas no fundo a gente sempre se entende! 😄</button>
+                    <button class="quiz-opt-btn" onclick="responderQuiz(this, false)">Ninguém assume a teimosia</button>
+                </div>
+            </div>
+
+            <div class="quiz-card">
+                <h4>7. Se fôssemos viajar amanhã sem rumo, para onde iríamos?</h4>
+                <div class="quiz-options">
+                    <button class="quiz-opt-btn" onclick="responderQuiz(this, true)">Para qualquer lugar, desde que seja juntos! ✈️</button>
+                    <button class="quiz-opt-btn" onclick="responderQuiz(this, false)">Ficaríamos em casa mesmo</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Seção 9: Carta de Amor -->
+    <div id="tab-letter" class="content-section">
+        <h2 class="story-title">Uma Carta Para Você ✉️</h2>
+        <div class="letter-box">
+            <p>Meu amor,</p><br>
+            <p>Desde o dia 21 de Abril, a minha vida ganhou cores que eu nem sabia que existiam. Estar ao seu lado me faz querer ser uma pessoa melhor a cada dia.</p><br>
+            <p>Obrigado por cada risada, cada abraço, cada conversa sincera e por construir essa história linda comigo. Te amar é a escolha mais fácil e feliz da minha vida!</p><br>
+            <p style="text-align: right; font-weight: bold;">Para sempre seu(sua) ❤️</p>
+        </div>
+    </div>
+
+    <script>
+        // Animação das Partículas do Fundo (Estrelas + Corações Flutuantes)
+        const canvas = document.getElementById('bgCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 3 + 1;
+                this.speedY = Math.random() * 0.8 + 0.2;
+                this.opacity = Math.random() * 0.7 + 0.3;
+                this.isHeart = Math.random() > 0.6;
+            }
+
+            update() {
+                this.y -= this.speedY;
+                if (this.y < -10) {
+                    this.y = canvas.height + 10;
+                    this.x = Math.random() * canvas.width;
+                }
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.opacity;
+                if (this.isHeart) {
+                    ctx.fillStyle = '#f472b6';
+                    ctx.font = `${this.size * 5}px sans-serif`;
+                    ctx.fillText('♥', this.x, this.y);
+                } else {
+                    ctx.fillStyle = '#c084fc';
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.restore();
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            for (let i = 0; i < 45; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animateParticles);
+        }
+
+        initParticles();
+        animateParticles();
+
+        // Alternar abas
+        function switchTab(event, tabId) {
+            document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
+            document.querySelectorAll('.menu-btn').forEach(btn => btn.classList.remove('active'));
+
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
+        // Trocar temas
+        function setTheme(themeName) {
+            document.documentElement.setAttribute('data-theme', themeName);
+            localStorage.setItem('preferred-theme', themeName);
+        }
+
+        const savedTheme = localStorage.getItem('preferred-theme');
+        if (savedTheme) {
+            setTheme(savedTheme);
+        }
+
+        // Contador de Tempo
+        function updateCounter() {
+            const agora = new Date();
+            const anoAtual = agora.getFullYear();
+            
+            let dataInicio = new Date(anoAtual, 3, 21, 0, 0, 0);
+            
+            if (agora < dataInicio) {
+                dataInicio = new Date(anoAtual - 1, 3, 21, 0, 0, 0);
+            }
+
+            const diferenca = agora - dataInicio;
+
+            if (diferenca > 0) {
+                const segundosTotal = Math.floor(diferenca / 1000);
+                const minutosTotal = Math.floor(segundosTotal / 60);
+                const horasTotal = Math.floor(minutosTotal / 60);
+                const diasTotal = Math.floor(horasTotal / 24);
+
+                const meses = Math.floor(diasTotal / 30.436875);
+                const semanas = Math.floor((diasTotal % 30.436875) / 7);
+                const dias = Math.floor((diasTotal % 30.436875) % 7);
+                
+                const horas = horasTotal % 24;
+                const minutos = minutosTotal % 60;
+                const segundos = segundosTotal % 60;
+
+                document.getElementById('meses').innerText = meses;
+                document.getElementById('semanas').innerText = semanas;
+                document.getElementById('dias').innerText = dias;
+                document.getElementById('horas').innerText = horas;
+                document.getElementById('minutos').innerText = minutos;
+                document.getElementById('segundos').innerText = segundos;
+            }
+        }
+
+        setInterval(updateCounter, 1000);
+        updateCounter();
+
+        // Girar Vinil ao dar Play
+        function startVinyl() {
+            document.getElementById('musicCover').style.animationPlayState = 'running';
+        }
+        function stopVinyl() {
+            document.getElementById('musicCover').style.animationPlayState = 'paused';
+        }
+
+        // Resgatar cupons
+        function resgatarCupom(btn) {
+            btn.innerText = "Resgatado! ❤️";
+            btn.classList.add("resgatado");
+            btn.disabled = true;
+        }
+
+        // Motivos para te amar
+        const motivos = [
+            "Amo o jeito que o seu sorriso consegue iluminar até os meus dias mais difíceis.",
+            "Amo as piadas sem graça que você conta só para me ver rir.",
+            "Amo a paz que eu sinto toda vez que estou abraçado(a) com você.",
+            "Amo o cuidado e o carinho que você tem com os mínimos detalhes.",
+            "Amo como a nossa sintonia parece mágica desde o primeiro dia.",
+            "Amo ouvir a sua voz logo cedo.",
+            "Amo o jeito simples e verdadeiro de demonstrar amor.",
+            "Amo construir cada plano do nosso futuro ao seu lado."
+        ];
+        let currentReason = 0;
+        function proximoMotivo() {
+            currentReason = (currentReason + 1) % motivos.length;
+            document.getElementById('reason-text').innerText = `"${motivos[currentReason]}"`;
+        }
+
+        // Checkbox Bucket List
+        function toggleCheck(checkbox) {
+            if (checkbox.checked) {
+                checkbox.parentElement.classList.add('checked');
+            } else {
+                checkbox.parentElement.classList.remove('checked');
+            }
+        }
+
+        // Função de resposta do Quiz
+        function responderQuiz(btn, correta) {
+            const parent = btn.parentElement;
+            parent.querySelectorAll('.quiz-opt-btn').forEach(b => b.disabled = true);
+            if (correta) {
+                btn.classList.add('correct');
+            } else {
+                btn.classList.add('wrong');
+            }
+        }
+    </script>
+</body>
+</html>
